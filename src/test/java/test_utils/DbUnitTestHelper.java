@@ -25,19 +25,30 @@ import org.junit.runners.model.Statement;
 
 public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule {
 
+    private static final int DEFAULT_PORT = 8082;
     private final Class executingClass;
     private final String connectionUrl;
     private final String username;
     private final String password;
+    private final int port;
 
     public DbUnitTestHelper(Class executingClass) {
-        this(executingClass, null);
+        this(executingClass, DEFAULT_PORT);
     }
-    public DbUnitTestHelper(Class executingClass, String schema) {
-        super(schema);
+
+    public DbUnitTestHelper(Class executingClass, int port) {
+        this(executingClass, port, null);
+    }
+
+    public DbUnitTestHelper(Class executingClass, int port, String dbMode) {
         this.executingClass = executingClass;
-        this.connectionUrl = "jdbc:h2:tcp://localhost/db;MODE=MYSQL;DB_CLOSE_DELAY=5;DB_CLOSE_ON_EXIT=true;";
-//        this.connectionUrl = "jdbc:h2:./h2;SCHEMA=ut;MODE=MYSQL;DB_CLOSE_DELAY=5;DB_CLOSE_ON_EXIT=true;";
+        this.port = port;
+        DbMode mode = DbMode.modeOf(dbMode);
+        if(mode == DbMode.NONE) {
+            this.connectionUrl = "jdbc:h2:tcp://localhost:" + this.port + "/db;DB_CLOSE_DELAY=5;DB_CLOSE_ON_EXIT=true;";
+        } else {
+            this.connectionUrl = "jdbc:h2:tcp://localhost:" + this.port + "/db;DB_CLOSE_DELAY=5;DB_CLOSE_ON_EXIT=true;MODE=" + mode.getMode();
+        }
         this.username = "sa";
         this.password = "as";
     }
@@ -57,7 +68,7 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
         } else {
             conn = DriverManager.getConnection(connectionUrl, username, password);
         }
-        DatabaseConnection dbConnection = new DatabaseConnection(conn, getSchema());
+        DatabaseConnection dbConnection = new DatabaseConnection(conn);
         DatabaseConfig config = dbConnection.getConfig();
         config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new MySqlDataTypeFactory());
 
@@ -65,13 +76,12 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
     }
 
     protected void before() throws Exception {
-//        executeQuery("CREATE TABLE `db_unit_sample` (`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,`first_name` varchar(255) NOT NULL DEFAULT '',`last_name` varchar(255) NOT NULL DEFAULT '',`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`created_by` varchar(255) NOT NULL DEFAULT '',`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,`updated_by` varchar(255) NOT NULL DEFAULT '',PRIMARY KEY (`id`));");
         IDataSet preparedDataSet = createDataSet();
         DatabaseOperation.CLEAN_INSERT.execute(getConnection(), preparedDataSet);
     }
 
     protected IDataSet createDataSet() throws Exception {
-        URL url = this.getClass().getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/"));
+        URL url = this.getClass().getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/") + "/given");
         File file = new File(url.toURI());
         CsvDataSet preparedDataSet = new CsvDataSet(file);
         return preparedDataSet;
@@ -79,7 +89,7 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
     }
 
     public ITable getExpectedTable(String table) throws Exception {
-        URL url = this.executingClass.getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/"));
+        URL url = this.executingClass.getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/") + "/expected");
         File file = new File(url.toURI());
         CsvDataSet expected = new CsvDataSet(file);
         return expected.getTable(table);
