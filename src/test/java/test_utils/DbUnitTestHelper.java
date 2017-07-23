@@ -87,9 +87,13 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
         return preparedDataSet;
 
     }
-
+    
     public ITable getExpectedTable(String table) throws Exception {
-        URL url = this.executingClass.getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/") + "/expected");
+        return getExpectedTable(null, table);
+    }
+
+    public ITable getExpectedTable(String scenario, String table) throws Exception {
+        URL url = this.executingClass.getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/") + "/expected" + (scenario != null && scenario.length() > 0 ? "" : "/" + scenario ));
         File file = new File(url.toURI());
         CsvDataSet expected = new CsvDataSet(file);
         return expected.getTable(table);

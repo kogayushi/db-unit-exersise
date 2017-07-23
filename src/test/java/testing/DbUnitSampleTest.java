@@ -35,7 +35,7 @@ public class DbUnitSampleTest {
             actual.addTable("db_unit_sample");
 
             // 期待値データをDbUnitで取得する
-            ITable expectedTable = helper.getExpectedTable("db_unit_sample");
+            ITable expectedTable = helper.getExpectedTable("test01", "db_unit_sample");
 
             // 期待値データと同じカラムのみ比較対象データとする
             ITable actualTable = DefaultColumnFilter.includedColumnsTable(actual.getTable("db_unit_sample"), expectedTable.getTableMetaData().getColumns());
