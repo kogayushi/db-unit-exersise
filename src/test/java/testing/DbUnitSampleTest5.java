@@ -16,14 +16,14 @@ import test_utils.DbUnitTestHelper;
 import test_utils.H2DatabaseServer;
 
 @RunWith(Enclosed.class)
-public class DbUnitSampleTest {
+public class DbUnitSampleTest5 {
 
     public static class Nested {
         public static final int port = H2DatabaseServer.getRandomPort();
 //      public static final int port = 8081; 
 
         @ClassRule
-        public static H2DatabaseServer server = new H2DatabaseServer(DbUnitSampleTest.class, port);
+        public static H2DatabaseServer server = new H2DatabaseServer(DbUnitSampleTest5.class, port);
 
         @Rule
         public DbUnitTestHelper helper = new DbUnitTestHelper(this.getClass(), port);
@@ -31,10 +31,7 @@ public class DbUnitSampleTest {
         @Test
         public void test() throws Exception {
 
-            // set up exercise
             // 実際のデータ変更などは、自作DAOなどでやっている想定
-
-            // verify
             QueryDataSet actual = new QueryDataSet(helper.getConnection());
             actual.addTable("db_unit_sample");
 

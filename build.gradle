@@ -25,10 +25,11 @@ repositories {
 
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter')
-    compile('org.springframework.boot:spring-boot-starter-jdbc')
-    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.42'
-    
+	compile 'org.springframework.boot:spring-boot-starter'
+    compile 'org.springframework.boot:spring-boot-starter-jdbc'
+    compile 'org.seasar.doma.boot:doma-spring-boot-starter:1.1.0'
+    compile 'mysql:mysql-connector-java'
+    compileOnly 'org.projectlombok:lombok'
     
 	testCompile('org.springframework.boot:spring-boot-starter-test')
     testCompile 'org.dbunit:dbunit:2.5.3'
@@ -45,4 +46,18 @@ eclipse {
 
 test {
 exclude '**/*$*'
+}
+
+apply from:'eclipse.gradle'
+
+apply plugin: 'idea'
+idea.module.inheritOutputDirs = true
+
+processResources.destinationDir = compileJava.destinationDir
+compileJava.dependsOn processResources
+
+test {
+    int cpus = Runtime.runtime.availableProcessors()
+    maxParallelForks = cpus > 1 ? cpus - 1 : 1
+    forkEvery = 1
 }
