@@ -1,6 +1,6 @@
 package test_utils;
 
-enum DbMode {
+public enum DbMode {
     MYSQL("MySQL"),
     POSTGRESQL("PostgreSQL"),
     ORACLE("Oracle"),

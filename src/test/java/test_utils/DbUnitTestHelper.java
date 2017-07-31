@@ -17,7 +17,7 @@ import org.dbunit.database.IDatabaseConnection;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.csv.CsvDataSet;
-import org.dbunit.ext.mysql.MySqlDataTypeFactory;
+import org.dbunit.ext.h2.H2DataTypeFactory;
 import org.dbunit.operation.DatabaseOperation;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -25,30 +25,17 @@ import org.junit.runners.model.Statement;
 
 public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule {
 
-    private static final int DEFAULT_PORT = 8082;
-    private final Class executingClass;
     private final String connectionUrl;
     private final String username;
     private final String password;
-    private final int port;
+    private final String executingClass;
 
-    public DbUnitTestHelper(Class executingClass) {
-        this(executingClass, DEFAULT_PORT);
-    }
-
-    public DbUnitTestHelper(Class executingClass, int port) {
-        this(executingClass, port, null);
-    }
-
-    public DbUnitTestHelper(Class executingClass, int port, String dbMode) {
-        this.executingClass = executingClass;
-        this.port = port;
-        DbMode mode = DbMode.modeOf(dbMode);
-        if(mode == DbMode.NONE) {
-            this.connectionUrl = "jdbc:h2:tcp://localhost:" + this.port + "/db;DB_CLOSE_DELAY=5;DB_CLOSE_ON_EXIT=true;";
-        } else {
-            this.connectionUrl = "jdbc:h2:tcp://localhost:" + this.port + "/db;DB_CLOSE_DELAY=5;DB_CLOSE_ON_EXIT=true;MODE=" + mode.getMode();
-        }
+    public DbUnitTestHelper(String connectionUrl, DbMode dbMode) {
+        if(connectionUrl == null) throw new IllegalArgumentException("connectionUrl is required");
+        if(dbMode == null) throw new IllegalArgumentException("dbMode is required");
+        StackTraceElement ste = Thread.currentThread().getStackTrace()[2];
+        this.executingClass = ste.getClassName().replaceAll("[$.]", "/");
+        this.connectionUrl = connectionUrl + (dbMode == DbMode.NONE ? "" : ";MODE=" + dbMode.getMode());
         this.username = "sa";
         this.password = "as";
     }
@@ -63,6 +50,12 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
     @Override
     public IDatabaseConnection getConnection() throws Exception {
         Connection conn = null;
+        try {
+            // JDBCドライバのロード
+            Class.forName("org.h2.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
+        }
         if (username == null && password == null) {
             conn = DriverManager.getConnection(connectionUrl);
         } else {
@@ -70,7 +63,7 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
         }
         DatabaseConnection dbConnection = new DatabaseConnection(conn);
         DatabaseConfig config = dbConnection.getConfig();
-        config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new MySqlDataTypeFactory());
+        config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new H2DataTypeFactory());
 
         return dbConnection;
     }
@@ -81,7 +74,7 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
     }
 
     protected IDataSet createDataSet() throws Exception {
-        URL url = this.getClass().getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/") + "/given");
+        URL url = this.getClass().getResource("/" + this.executingClass + "/given");
         File file = new File(url.toURI());
         CsvDataSet preparedDataSet = new CsvDataSet(file);
         return preparedDataSet;
@@ -93,7 +86,7 @@ public class DbUnitTestHelper extends AbstractDatabaseTester implements TestRule
     }
 
     public ITable getExpectedTable(String scenario, String table) throws Exception {
-        URL url = this.executingClass.getResource("/" + this.executingClass.getCanonicalName().replaceAll("\\.", "/") + "/expected" + (scenario != null && scenario.length() > 0 ? "" : "/" + scenario ));
+        URL url = this.getClass().getResource("/" + this.executingClass + "/expected" + (scenario != null && scenario.length() > 0 ? "/" + scenario : "" ));
         File file = new File(url.toURI());
         CsvDataSet expected = new CsvDataSet(file);
         return expected.getTable(table);

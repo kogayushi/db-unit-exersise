@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
+import test_utils.DbMode;
 import test_utils.DbUnitTestHelper;
 import test_utils.H2DatabaseServer;
 
@@ -23,10 +24,10 @@ public class DbUnitSampleTest4 {
 //      public static final int port = 8081; 
 
         @ClassRule
-        public static H2DatabaseServer server = new H2DatabaseServer(DbUnitSampleTest4.class, port);
+        public static H2DatabaseServer server = new H2DatabaseServer();
 
         @Rule
-        public DbUnitTestHelper helper = new DbUnitTestHelper(this.getClass(), port);
+        public DbUnitTestHelper helper = new DbUnitTestHelper(server.getUrl(), DbMode.NONE);
 
         @Test
         public void test() throws Exception {
