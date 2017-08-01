@@ -4,6 +4,6 @@ CREATE TABLE `DB_UNIT_SAMPLE` (`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
 `last_name` varchar(255) NOT NULL DEFAULT '',
 `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `created_by` varchar(255) NOT NULL DEFAULT '',
-`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-`updated_by` varchar(255) NOT NULL DEFAULT '',
+`updated_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+`updated_by` varchar(255) DEFAULT '',
 PRIMARY KEY (`id`));

@@ -1,15 +1,18 @@
 package com.example.dao;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static test_utils.ITableMatcher.tableOf;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.dbunit.database.QueryDataSet;
+import org.dbunit.dataset.DataSetException;
+import org.dbunit.dataset.ITable;
+import org.dbunit.dataset.filter.DefaultColumnFilter;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,12 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
+import com.example.App;
 import com.example.entity.DbUnitSample;
 
 import test_utils.DbMode;
@@ -74,21 +79,34 @@ public class DbUnitSampleDaoTest {
     }
 
     @Test
-    public void test_save() {
+    public void test_save() throws Exception{
         final DbUnitSample sample = new DbUnitSample();
         sample.setFirstName("tomonori");
         sample.setLastName("okanoya");
         LocalDateTime current = LocalDateTime.now();
         sample.setCreatedAt(current);
         sample.setCreatedBy("junit");
-        sample.setCreatedAt(current);
-        sample.setCreatedBy("junit");
+        sample.setUpdatedAt(current);
+        sample.setUpdatedBy("junit");
 
         dao.save(sample);
+        
+        QueryDataSet actual = new QueryDataSet(helper.getConnection());
+        actual.addTable("db_unit_sample");
+
+        // 期待値データをDbUnitで取得する
+        ITable expectedTable = helper.getExpectedTable("db_unit_sample");
+
+        // 期待値データと同じカラムのみ比較対象データとする
+        ITable actualTable = DefaultColumnFilter.includedColumnsTable(actual.getTable("db_unit_sample"), expectedTable.getTableMetaData().getColumns());
+
+        // 比較する
+        assertThat(actualTable, tableOf(expectedTable));
 
     }
     
     @Configuration
+    @Import(App.class)
     public static class TestConfig {
         @Bean
         @Primary
