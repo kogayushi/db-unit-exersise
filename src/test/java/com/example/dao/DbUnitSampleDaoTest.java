@@ -51,7 +51,7 @@ public class DbUnitSampleDaoTest {
     public static final int port = H2DatabaseServer.getRandomPort();
 
      @ClassRule
-     public static H2DatabaseServer server = new H2DatabaseServer(port);
+     public static H2DatabaseServer server = new H2DatabaseServer(port, DbMode.NONE);
     
      @Rule
      public DbUnitTestHelper helper = new DbUnitTestHelper(server.getUrl(), DbMode.NONE);

@@ -24,7 +24,7 @@ public class DbUnitSampleTest4 {
 //      public static final int port = 8081; 
 
         @ClassRule
-        public static H2DatabaseServer server = new H2DatabaseServer();
+        public static H2DatabaseServer server = new H2DatabaseServer(port, DbMode.NONE);
 
         @Rule
         public DbUnitTestHelper helper = new DbUnitTestHelper(server.getUrl(), DbMode.NONE);
@@ -37,7 +37,7 @@ public class DbUnitSampleTest4 {
             actual.addTable("db_unit_sample");
 
             // 期待値データをDbUnitで取得する
-            ITable expectedTable = helper.getExpectedTable("test01", "db_unit_sample");
+            ITable expectedTable = helper.getExpectedTable("db_unit_sample");
 
             // 期待値データと同じカラムのみ比較対象データとする
             ITable actualTable = DefaultColumnFilter.includedColumnsTable(actual.getTable("db_unit_sample"), expectedTable.getTableMetaData().getColumns());

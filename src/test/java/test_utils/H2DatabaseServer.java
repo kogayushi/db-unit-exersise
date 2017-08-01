@@ -28,14 +28,6 @@ public class H2DatabaseServer extends ExternalResource {
     
     private Server server = null;
 
-    public H2DatabaseServer() {
-        this(DEFAULT_PORT);
-    }
-
-    public H2DatabaseServer(int port) {
-        this(port, DbMode.NONE);
-    }
-
     public H2DatabaseServer(int port, DbMode dbMode) {
         StackTraceElement ste = Thread.currentThread().getStackTrace()[2];
         this.executingClass = ste.getClassName().replaceAll("[$.]", "/");
