@@ -60,4 +60,7 @@ test {
     int cpus = Runtime.runtime.availableProcessors()
     maxParallelForks = cpus > 1 ? cpus - 1 : 1
     forkEvery = 1
+    testLogging {
+        events 'started', 'skipped', 'passed', 'failed'
+    }
 }

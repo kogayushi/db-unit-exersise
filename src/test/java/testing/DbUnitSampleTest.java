@@ -21,7 +21,6 @@ public class DbUnitSampleTest {
 
     public static class Nested {
         public static final int port = H2DatabaseServer.getRandomPort();
-//      public static final int port = 8081; 
 
         @ClassRule
         public static H2DatabaseServer server = new H2DatabaseServer(port, DbMode.NONE);
